@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6903f06e96c43789549f142f8956d64, type: 3}
+  m_Name: 12_attack_basic_legendary
+  m_EditorClassIdentifier: 
+  id: 12_attack_basic_legendary
+  cardName: Basic Attack
+  manaCost: 1
+  cardSprite: {fileID: 21300000, guid: 24e068566b388bc44b776336718404cf, type: 3}
+  rarity: 2
+  usableWithoutTarget: 1
+  exhaustAfterPlay: 0
+  cardActionDataList:
+  - cardActionType: 0
+    actionTargetType: 2
+    actionValue: 12
+    actionDelay: 0
+  cardDescriptionDataList:
+  - descriptionText: 'Deal '
+    enableOverrideColor: 0
+    overrideColor: {r: 0, g: 0, b: 0, a: 1}
+    useModifier: 0
+    modifiedActionValueIndex: 0
+    modiferStats: 0
+    usePrefixOnModifiedValue: 0
+    modifiedValuePrefix: '*'
+    overrideColorOnValueScaled: 0
+  - descriptionText: '{totalDamage}'
+    enableOverrideColor: 1
+    overrideColor: {r: 0.7686275, g: 0.14117648, b: 0.18823531, a: 1}
+    useModifier: 1
+    modifiedActionValueIndex: 0
+    modiferStats: 3
+    usePrefixOnModifiedValue: 1
+    modifiedValuePrefix: '*'
+    overrideColorOnValueScaled: 1
+  - descriptionText: ' damage'
+    enableOverrideColor: 0
+    overrideColor: {r: 0, g: 0, b: 0, a: 1}
+    useModifier: 0
+    modifiedActionValueIndex: 0
+    modiferStats: 0
+    usePrefixOnModifiedValue: 0
+    modifiedValuePrefix: '*'
+    overrideColorOnValueScaled: 0
+  specialKeywordsList: 
+  audioType: 0
+  upgradeStep: 3
+  nextUpgrade: {fileID: 0}

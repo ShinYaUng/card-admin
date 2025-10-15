@@ -1,0 +1,38 @@
+{
+  "users": [
+    {
+      "id": "d0482b02-bf73-4b9c-879a-cbfe1ee95c0c",
+      "username": "admin",
+      "passwordHash": "$2b$10$bKGhcerhxmUxJ93YdsK63egB7hGKIoI7CH/R/ZV/BweegdLXbL6TW",
+      "role": "admin"
+    }
+  ],
+  "cards": [
+    {
+      "id": "CARD_8e3e16a5-f9f8-46d8-affa-0aa7c5b6a4cc",
+      "cardName": "i am atomic",
+      "manaCost": 5,
+      "rarity": "Legendary",
+      "spriteUrl": "",
+      "usableWithoutTarget": false,
+      "exhaustAfterPlay": true,
+      "actions": [
+        {
+          "type": "Attack",
+          "target": "Enemy",
+          "value": 20,
+          "delay": 0
+        }
+      ],
+      "desc": [
+        {
+          "text": "Deal {totalDamage} to an enemy.",
+          "useModifier": false,
+          "actionIndex": 0,
+          "modStat": "Strength"
+        }
+      ],
+      "upgrade": null
+    }
+  ]
+}

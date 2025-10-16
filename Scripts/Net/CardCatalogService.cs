@@ -14,7 +14,7 @@ namespace NueGames.NueDeck.Scripts.Net
     {
         public static CardCatalogService Instance { get; private set; }
 
-        [SerializeField] private string catalogUrl = "http://localhost:8080/cards"; // GET -> RemoteCardList (JSON)
+        [SerializeField] private string catalogUrl = "https://card-admin-api.onrender.com/cards"; // GET -> RemoteCardList (JSON)
 
         private readonly Dictionary<string, CardData> _runtime = new();
         private bool _refreshing;

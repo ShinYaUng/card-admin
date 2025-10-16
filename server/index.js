@@ -15,11 +15,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+import cors from "cors";
+const allowed = [
+    "http://localhost:5173",
+    "https://<YOUR_VERCEL_DOMAIN>" // ใส่ทีหลังหลังได้โดเมน Vercelแล้ว
+];
 app.use(cors({
-    origin: '*', // ✅ อนุญาตทุก origin (ใช้ใน LAN ได้)
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    origin: (origin, cb) => {
+        if (!origin || allowed.some(a => origin.startsWith(a))) return cb(null, true);
+        cb(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 app.use(express.json({ limit: "10mb" }));
 
 // เสิร์ฟไฟล์อัปโหลดแบบ static
@@ -124,6 +133,5 @@ app.post("/api/upload", authRequired, upload.single("file"), (req, res) => {
   res.json({ ok: true, url });
 });
 
-app.listen(8080, "0.0.0.0", () => {
-    console.log("API running on http://0.0.0.0:8080");
-});
+const port = process.env.PORT || 8080;
+app.listen(port, "0.0.0.0", () => console.log(`API on :${port}`));

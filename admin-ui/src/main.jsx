@@ -1,3 +1,4 @@
+﻿import './theme.css' // ✅ เพิ่มบรรทัดนี้
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";

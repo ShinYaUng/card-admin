@@ -1,5 +1,5 @@
-﻿// admin-ui/src/Login.jsx
-import { useState } from "react";
+﻿import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./index.css";
 
 export default function Login() {
@@ -7,8 +7,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const API_BASE = import.meta.env.VITE_API_BASE; // ตั้งใน Vercel แล้ว
+  const API_BASE = import.meta.env.VITE_API_BASE; // กำหนดใน Vercel แล้ว
 
   const handleLogin = async (e) => {
     e?.preventDefault?.();
@@ -30,11 +31,11 @@ export default function Login() {
 
       const data = await res.json();
       if (!data?.token) throw new Error("Invalid response");
+
       localStorage.setItem("token", data.token);
 
-      // TODO: เปลี่ยนไปหน้าแอดมินหลักที่คุณต้องการ
-      // window.location.href = "/cards";
-      alert(`✨ Login Success! Welcome, ${username}`);
+      // เด้งไปหน้าแก้ไขการ์ด
+      navigate("/cards", { replace: true });
     } catch (err) {
       setError(err.message || "Failed to fetch");
     } finally {
@@ -59,18 +60,18 @@ export default function Login() {
         <input
           type="text"
           value={username}
-          placeholder="Enter your username"
           onChange={(e) => setUsername(e.target.value)}
           className="w-full bg-slate-800/60 border border-yellow-500/50 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-yellow-400 outline-none mb-4"
+          placeholder="Enter your username"
         />
 
         <label className="block text-purple-200 mb-2 font-semibold">Password</label>
         <input
           type="password"
           value={password}
-          placeholder="Enter your password"
           onChange={(e) => setPassword(e.target.value)}
           className="w-full bg-slate-800/60 border border-yellow-500/50 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-yellow-400 outline-none mb-4"
+          placeholder="Enter your password"
         />
 
         {error && (
@@ -88,7 +89,7 @@ export default function Login() {
         </button>
 
         <p className="text-center text-sm text-slate-300 mt-6 italic">
-          © 2025 ShinYa Card Master — Powered by Magic Deck System 🪄
+          © 2025 Gmae Card Master — Powered by Magic Deck System 🪄
         </p>
       </form>
     </div>

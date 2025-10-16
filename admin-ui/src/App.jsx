@@ -1,18 +1,36 @@
-import React, { useState } from "react";
-import Login from "./Login.jsx";
-import Cards from "./Cards.jsx";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import Login from "./Login";
+import Cards from "./Cards";
+
+// ป้องกันหน้า admin ถ้ายังไม่มี token
+function PrivateRoute({ children }) {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/" replace />;
+}
+
+function CardsPage() {
+  const navigate = useNavigate();
+  const onLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/", { replace: true });
+  };
+  return <Cards onLogout={onLogout} />;
+}
 
 export default function App() {
-  const [token, setToken] = useState(localStorage.getItem("token"));
-
-  function onLogin(tok) {
-    localStorage.setItem("token", tok);
-    setToken(tok);
-  }
-  function onLogout() {
-    localStorage.removeItem("token");
-    setToken(null);
-  }
-
-  return token ? <Cards onLogout={onLogout} /> : <Login onLogin={onLogin} />;
+  return (
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route
+        path="/cards"
+        element={
+          <PrivateRoute>
+            <CardsPage />
+          </PrivateRoute>
+        }
+      />
+      {/* กันเคสเส้นทางอื่น ๆ */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }

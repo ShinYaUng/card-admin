@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap');
-
+@import './theme.css';
 body {
   background: linear-gradient(to bottom right, #1a103d, #2c1e4a);
   background-image: url('/bg-magic.jpg');

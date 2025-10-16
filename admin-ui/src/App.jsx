@@ -1,36 +1,32 @@
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import Login from "./Login";
-import Cards from "./Cards";
+import React from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import Login from "./Login.jsx";
+import Cards from "./Cards.jsx";
 
-// ป้องกันหน้า admin ถ้ายังไม่มี token
-function PrivateRoute({ children }) {
-  const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/" replace />;
-}
+const isAuthed = () => !!localStorage.getItem("token");
 
-function CardsPage() {
-  const navigate = useNavigate();
-  const onLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/", { replace: true });
-  };
-  return <Cards onLogout={onLogout} />;
+function ProtectedRoute({ children }) {
+  const location = useLocation();
+  if (!isAuthed()) return <Navigate to="/login" replace state={{ from: location }} />;
+  return children;
 }
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Login />} />
-      <Route
-        path="/cards"
-        element={
-          <PrivateRoute>
-            <CardsPage />
-          </PrivateRoute>
-        }
-      />
-      {/* กันเคสเส้นทางอื่น ๆ */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <div className="app-shell">
+      <Routes>
+        <Route path="/" element={<Navigate to="/cards" replace />} />
+        <Route
+          path="/cards"
+          element={
+            <ProtectedRoute>
+              <Cards />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<Navigate to="/cards" replace />} />
+      </Routes>
+    </div>
   );
 }

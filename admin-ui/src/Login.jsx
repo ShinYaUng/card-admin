@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+﻿// admin-ui/src/Login.jsx
+import { useState } from "react";
 import "./index.css";
 
 export default function Login() {
@@ -29,11 +30,9 @@ export default function Login() {
 
       const data = await res.json();
       if (!data?.token) throw new Error("Invalid response");
-
-      // เก็บ token ไว้ใช้กับหน้า admin อื่น ๆ
       localStorage.setItem("token", data.token);
 
-      // TODO: เปลี่ยนเส้นทางไปหน้า Admin หลักที่คุณต้องการ
+      // TODO: เปลี่ยนไปหน้าแอดมินหลักที่คุณต้องการ
       // window.location.href = "/cards";
       alert(`✨ Login Success! Welcome, ${username}`);
     } catch (err) {
@@ -59,8 +58,8 @@ export default function Login() {
         <label className="block text-purple-200 mb-2 font-semibold">Username</label>
         <input
           type="text"
-          placeholder="Enter your username"
           value={username}
+          placeholder="Enter your username"
           onChange={(e) => setUsername(e.target.value)}
           className="w-full bg-slate-800/60 border border-yellow-500/50 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-yellow-400 outline-none mb-4"
         />
@@ -68,8 +67,8 @@ export default function Login() {
         <label className="block text-purple-200 mb-2 font-semibold">Password</label>
         <input
           type="password"
-          placeholder="Enter your password"
           value={password}
+          placeholder="Enter your password"
           onChange={(e) => setPassword(e.target.value)}
           className="w-full bg-slate-800/60 border border-yellow-500/50 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-yellow-400 outline-none mb-4"
         />

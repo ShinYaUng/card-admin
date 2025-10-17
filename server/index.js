@@ -1,150 +1,121 @@
 // server/index.js
+import "dotenv/config.js";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import multer from "multer";
-import { v4 as uuid } from "uuid";
+import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
-
-// ถ้ามี helper พวกนี้อยู่ในโปรเจกต์เดิม ให้ import ตามนี้
-import { readDB, writeDB } from "./db.js";
-import { authRequired } from "./auth.js";
-
-dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import multer from "multer";
 
 const app = express();
 
-// --- CORS: อนุญาต localhost (dev) + โดเมน Vercel ของหน้า Admin ---
-const ALLOWED_ORIGINS = [
-  "http://localhost:5173",
-  "https://card-admin-mu.vercel.app",
-];
+// ===== Core middlewares =====
+app.use(cors({ origin: true }));
+app.use(express.json({ limit: "1mb" })); // ไม่ต้องใหญ่มาก เพราะไม่รับ base64 แล้ว
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin) return cb(null, true);
-      cb(ALLOWED_ORIGINS.some((a) => origin.startsWith(a)) ? null : new Error("Not allowed by CORS"), true);
-    },
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// ===== Config =====
+const PORT = Number(process.env.PORT || 8080);
+const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
+const ADMIN_USER = process.env.ADMIN_USER || process.env.ADMIN_DEFAULT_USER || "admin";
+const ADMIN_PASS = process.env.ADMIN_PASS || process.env.ADMIN_DEFAULT_PASS || "admin123";
 
-app.use(express.json({ limit: "10mb" }));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// ===== Health =====
+app.get("/health", (_req, res) => res.json({ ok: true }));
 
-// === อัปโหลดไฟล์ (รูปการ์ด ฯลฯ) ===
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, "uploads")),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname || ".png").toLowerCase();
-    cb(null, `card_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
-  },
-});
-const upload = multer({ storage });
-
-// === seed แอดมิน (ครั้งแรก) ===
-(function seedAdmin() {
-  const db = readDB();
-  db.users ||= [];
-  if (db.users.length === 0) {
-    const username = process.env.ADMIN_DEFAULT_USER || "admin";
-    const password = process.env.ADMIN_DEFAULT_PASS || "admin123";
-    const hash = bcrypt.hashSync(password, 10);
-    db.users.push({ id: uuid(), username, passwordHash: hash, role: "admin" });
-    writeDB(db);
-    console.log(`[seed] admin: ${username} / ${password}`);
-  }
-})();
-
-// ---------- AUTH ----------
-app.post("/api/auth/login", (req, res) => {
-  const { username, password } = req.body || {};
-  const db = readDB();
-  const user = db.users.find((u) => u.username === username);
-  if (!user) return res.status(401).json({ error: "Invalid credentials" });
-  if (!bcrypt.compareSync(password, user.passwordHash))
-    return res.status(401).json({ error: "Invalid credentials" });
-
-  const token = jwt.sign(
-    { sub: user.id, username: user.username, role: user.role },
-    process.env.JWT_SECRET || "dev-secret",
-    { expiresIn: "12h" }
-  );
-  res.json({ token });
-});
-
-// ✅ ทางลัดเพื่อรองรับ frontend เก่าที่เรียก /login
+// ===== Login (JWT) =====
 app.post("/login", (req, res) => {
   const { username, password } = req.body || {};
-  const db = readDB();
-  const user = db.users.find((u) => u.username === username);
-  if (!user) return res.status(401).json({ error: "Invalid credentials" });
-  if (!bcrypt.compareSync(password, user.passwordHash))
-    return res.status(401).json({ error: "Invalid credentials" });
-
-  const token = jwt.sign(
-    { sub: user.id, username: user.username, role: user.role },
-    process.env.JWT_SECRET || "dev-secret",
-    { expiresIn: "12h" }
-  );
+  if (!username || !password) return res.status(400).json({ error: "username/password required" });
+  if (username !== ADMIN_USER || password !== ADMIN_PASS) {
+    return res.status(401).json({ error: "invalid credentials" });
+  }
+  const token = jwt.sign({ sub: username, role: "admin" }, JWT_SECRET, { expiresIn: "8h" });
   res.json({ token });
 });
 
-// ---------- PUBLIC (ให้ Unity ใช้) ----------
-app.get("/cards", (req, res) => {
+// ===== Simple file DB =====
+const DB_FILE = path.join(process.cwd(), "data.json");
+function ensureDB() {
+  if (!fs.existsSync(DB_FILE)) fs.writeFileSync(DB_FILE, JSON.stringify({ cards: [] }, null, 2));
+}
+function readDB() { ensureDB(); return JSON.parse(fs.readFileSync(DB_FILE, "utf8")); }
+function writeDB(data) { fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2)); }
+
+// ===== Uploads (Production-like) =====
+const UPLOAD_DIR = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+// ให้โหลดไฟล์ได้ที่ /uploads/xxxx.png
+app.use("/uploads", express.static(UPLOAD_DIR, {
+  setHeaders: (res) => {
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  },
+}));
+
+// กรอง mimetype เฉพาะรูป
+const imageFilter = (_req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) cb(null, true);
+  else cb(new Error("only image files are allowed"));
+};
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
+  filename: (_req, file, cb) => {
+    const safeBase = (path.parse(file.originalname).name || "img").replace(/[^a-zA-Z0-9_-]/g, "_");
+    const ext = (path.extname(file.originalname) || ".png").toLowerCase();
+    cb(null, `${Date.now()}_${safeBase}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: imageFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+});
+
+// POST /upload  field name: "file"  -> { url: "/uploads/xxxx.png" }
+app.post("/upload", upload.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "no file" });
+  const url = `/uploads/${req.file.filename}`;
+  res.json({ url });
+});
+
+// ===== Cards API =====
+app.get("/cards", (_req, res) => {
   const db = readDB();
   res.json({ cards: db.cards || [] });
 });
 
-// ---------- ADMIN CRUD (ต้องมี token) ----------
-app.get("/api/cards", authRequired, (req, res) => {
+app.post("/cards", (req, res) => {
+  const p = req.body || {};
+  const errors = [];
+  if (!p.id || !String(p.id).trim()) errors.push("id is required");
+  if (!p.name || !String(p.name).trim()) errors.push("name is required");
+  if (p.spriteUrl && !/^\/uploads\//.test(p.spriteUrl) && !/^https?:\/\//.test(p.spriteUrl)) {
+    errors.push("spriteUrl must be a valid URL or /uploads/*");
+  }
+  if (errors.length) return res.status(400).json({ errors });
+
   const db = readDB();
-  res.json({ cards: db.cards || [] });
-});
+  db.cards = db.cards || [];
+  if (db.cards.some((c) => c.id === p.id)) {
+    return res.status(400).json({ errors: ["duplicated id"] });
+  }
 
-app.post("/api/cards", authRequired, (req, res) => {
-  const db = readDB();
-  db.cards ||= [];
-  const b = req.body || {};
-
-  if (!b.cardName) return res.status(400).json({ error: "cardName required" });
-
-  const card = {
-    id: b.id || `CARD_${uuid()}`,
-    cardName: b.cardName,
-    manaCost: Number(b.manaCost || 0),
-    rarity: b.rarity || "Common",
-    spriteUrl: b.spriteUrl || "",
-    usableWithoutTarget: !!b.usableWithoutTarget,
-    exhaustAfterPlay: !!b.exhaustAfterPlay,
-    actions: Array.isArray(b.actions) ? b.actions : [],
-    desc: Array.isArray(b.desc) ? b.desc : [],
-    upgrade: b.upgrade || null,
-  };
-
-  db.cards.push(card);
+  db.cards.push({
+    id: String(p.id).trim(),
+    name: String(p.name).trim(),
+    mana: Number(p.mana) || 0,
+    rarity: p.rarity || "Common",
+    spriteUrl: p.spriteUrl || "",          // เก็บ URL สั้น ๆ จาก /upload
+    action: p.action || null,
+  });
   writeDB(db);
-  res.json({ ok: true, card });
+  res.status(201).json({ ok: true });
 });
 
-app.put("/api/cards/:id", authRequired, (req, res) => {
-  const db = readDB();
-  const i = (db.cards || []).findIndex((c) => c.id === req.params.id);
-  if (i === -1) return res.status(404).json({ error: "Not found" });
-  db.cards[i] = { ...db.cards[i], ...req.body, id: db.cards[i].id };
-  writeDB(db);
-  res.json({ ok: true, card: db.cards[i] });
-});
-
-app.delete("/api/cards/:id", authRequired, (req, res) => {
+app.delete("/cards/:id", (req, res) => {
   const db = readDB();
   const before = (db.cards || []).length;
   db.cards = (db.cards || []).filter((c) => c.id !== req.params.id);
@@ -152,13 +123,7 @@ app.delete("/api/cards/:id", authRequired, (req, res) => {
   res.json({ ok: true, removed: before - db.cards.length });
 });
 
-// อัปโหลดรูป -> คืน URL เก็บใน spriteUrl ได้เลย
-app.post("/api/upload", authRequired, upload.single("file"), (req, res) => {
-  const base = process.env.BASE_URL || `http://localhost:${process.env.PORT || 8080}`;
-  const url = `${base}/uploads/${req.file.filename}`;
-  res.json({ ok: true, url });
+// ===== Start =====
+app.listen(PORT, () => {
+  console.log(`Server listening on http://localhost:${PORT}`);
 });
-
-// ---------- START ----------
-const port = process.env.PORT || 8080;
-app.listen(port, "0.0.0.0", () => console.log(`✅ API running on :${port}`));

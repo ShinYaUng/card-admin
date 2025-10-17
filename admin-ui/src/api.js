@@ -1,63 +1,30 @@
-const API = import.meta.env.VITE_API_BASE || "http://localhost:8080";
-
-function authHeader() {
-  const t = localStorage.getItem("token");
-  return t ? { Authorization: `Bearer ${t}` } : {};
-}
-
-export async function login(username, password) {
-  const r = await fetch(`${API}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
-  });
-  if (!r.ok) throw new Error("Login failed");
-  return r.json();
-}
+export const API_BASE =
+  import.meta.env.VITE_API_BASE?.replace(/\/+$/, "") || "http://localhost:8080";
 
 export async function listCards() {
-  const r = await fetch(`${API}/api/cards`, { headers: { ...authHeader() } });
-  if (!r.ok) throw new Error("Fetch cards failed");
+  const r = await fetch(`${API_BASE}/cards`);
+  if (!r.ok) throw new Error(`listCards failed: ${r.status}`);
   return r.json();
 }
 
 export async function createCard(card) {
-  const r = await fetch(`${API}/api/cards`, {
+  const r = await fetch(`${API_BASE}/cards`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify(card)
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(card),
   });
-  if (!r.ok) throw new Error("Create failed");
-  return r.json();
-}
-
-export async function updateCard(id, card) {
-  const r = await fetch(`${API}/api/cards/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify(card)
-  });
-  if (!r.ok) throw new Error("Update failed");
-  return r.json();
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const msg = data?.errors?.join(", ") || `create failed: ${r.status}`;
+    throw new Error(msg);
+  }
+  return data;
 }
 
 export async function deleteCard(id) {
-  const r = await fetch(`${API}/api/cards/${id}`, {
+  const r = await fetch(`${API_BASE}/cards/${encodeURIComponent(id)}`, {
     method: "DELETE",
-    headers: { ...authHeader() }
   });
-  if (!r.ok) throw new Error("Delete failed");
-  return r.json();
-}
-
-export async function uploadImage(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-  const r = await fetch(`${API}/api/upload`, {
-    method: "POST",
-    headers: { ...authHeader() },
-    body: fd
-  });
-  if (!r.ok) throw new Error("Upload failed");
+  if (!r.ok) throw new Error(`delete failed: ${r.status}`);
   return r.json();
 }

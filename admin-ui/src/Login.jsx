@@ -21,11 +21,9 @@ export default function Login() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-      const data = await res.json(); // { token }
+      const text = await res.text();
+      if (!res.ok) throw new Error(tryJson(text)?.error || text || `HTTP ${res.status}`);
+      const data = tryJson(text);
       localStorage.setItem("token", data.token);
       nav(state?.from?.pathname || "/cards", { replace: true });
     } catch (e) {
@@ -36,11 +34,22 @@ export default function Login() {
   }
 
   return (
-    <div className="page">
-      <div className="card narrow">
-        <h1 className="title">Admin Login</h1>
-        <form onSubmit={onSubmit} className="form grid gap">
-          <label className="field">
+    <div className="login-wrap">
+      <div className="login-card">
+        <div className="login-head">
+          <div className="logo" aria-hidden>🃏</div>
+          <h1>Admin Login</h1>
+          <p className="muted">API: {API || "— not set (VITE_API_BASE) —"}</p>
+        </div>
+
+        {err && (
+          <div className="login-alert" role="alert">
+            <strong>ไม่สำเร็จ:</strong> {err}
+          </div>
+        )}
+
+        <form onSubmit={onSubmit} className="login-form">
+          <label>
             <span>Username</span>
             <input
               value={username}
@@ -49,7 +58,8 @@ export default function Login() {
               required
             />
           </label>
-          <label className="field">
+
+          <label>
             <span>Password</span>
             <input
               type="password"
@@ -59,13 +69,16 @@ export default function Login() {
               required
             />
           </label>
-          {err && <div className="alert error">{err}</div>}
-          <button className="btn primary" disabled={loading}>
+
+          <button className="btn primary full" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-        <p className="muted">API: {API || "— not set (VITE_API_BASE) —"}</p>
       </div>
     </div>
   );
+}
+
+function tryJson(t) {
+  try { return JSON.parse(t); } catch { return {}; }
 }

@@ -9,30 +9,54 @@
   ],
   "cards": [
     {
-      "id": "CARD_8e3e16a5-f9f8-46d8-affa-0aa7c5b6a4cc",
-      "cardName": "i am atomic",
-      "manaCost": 5,
+      "id": "001",
+      "name": "I am atomic",
+      "mana": 4,
       "rarity": "Legendary",
       "spriteUrl": "",
-      "usableWithoutTarget": false,
+      "usableWithoutTarget": true,
       "exhaustAfterPlay": true,
-      "actions": [
-        {
-          "type": "Attack",
-          "target": "Enemy",
-          "value": 20,
-          "delay": 0
+      "action": {
+        "type": "Heal",
+        "value": 7,
+        "target": {
+          "side": "self",
+          "mode": "single",
+          "count": 1
         }
-      ],
-      "desc": [
-        {
-          "text": "Deal {totalDamage} to an enemy.",
-          "useModifier": false,
-          "actionIndex": 0,
-          "modStat": "Strength"
+      }
+    },
+    {
+      "id": "002",
+      "name": "recover",
+      "mana": 0,
+      "rarity": "Common",
+      "spriteUrl": "",
+      "usableWithoutTarget": false,
+      "exhaustAfterPlay": false,
+      "action": {
+        "type": "ฟื้นฟู",
+        "value": 4,
+        "target": {
+          "side": "self",
+          "mode": "single"
         }
-      ],
-      "upgrade": null
+      }
+    },
+    {
+      "id": "003",
+      "name": "ShinYa",
+      "mana": 3,
+      "rarity": "Legendary",
+      "spriteUrl": "/uploads/1760680224521_Shinya__2_.png",
+      "action": {
+        "type": "ป้องกัน",
+        "value": 4,
+        "target": {
+          "side": "self",
+          "mode": "single"
+        }
+      }
     }
   ]
 }

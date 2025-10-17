@@ -1,7 +1,169 @@
-/* ที่นี่เก็บของตกแต่งเพิ่มเล็กน้อย เพื่อให้ธีมดูสบายตา */
-:root{
-  --bg-grad: radial-gradient(1000px 400px at 90% -20%, #edeaff 0%, #f7f7fb 60%, #f7f7fb 100%);
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f6f8fb;
+  color: #222;
+  margin: 0;
 }
 
-.page{background: var(--bg-grad)}
-.topbar__right{display:flex;gap:10px}
+.wrap {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 26px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+input, select {
+  margin-top: 5px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+input:focus, select:focus {
+  border-color: #409eff;
+  outline: none;
+}
+
+button {
+  background: #409eff;
+  color: #fff;
+  font-weight: bold;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #66b1ff;
+}
+
+button.danger {
+  background: #ff5c5c;
+}
+button.danger:hover {
+  background: #ff7b7b;
+}
+
+button.edit {
+  background: #67c23a;
+}
+button.edit:hover {
+  background: #85d66b;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th, .table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.table th {
+  background: #f3f3f3;
+}
+
+.alert {
+  background: #e8f6e8;
+  border: 1px solid #a5d6a7;
+  color: #2e7d32;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.empty {
+  text-align: center;
+  padding: 12px;
+  color: #888;
+}
+
+/* --- helper สำหรับจัดกริด --- */
+.grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.span-2{ grid-column:span 2; }
+
+/* ช่องกันระยะ: กินพื้นที่เท่าช่องจริง แต่ไม่แสดงผล */
+.placeholder{
+  visibility:hidden;
+  height:0; margin:0; padding:0; border:0;
+}
+
+/* ===== ตารางให้คอลัมน์เท่ากัน + ตัดคำสวย ๆ ===== */
+.table{
+  width:100%;
+  border-collapse: collapse;
+  table-layout: fixed;   /* ✅ ให้แต่ละคอลัมน์กว้างเท่ากัน */
+  font-size:14px;
+}
+.table th,.table td{
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:left;
+  overflow:hidden;
+  text-overflow:ellipsis; /* ✅ ถ้ายาวให้ ... */
+  white-space:nowrap;
+}
+.table th{ background:#f3f3f3; }
+
+/* ปุ่มทั่วไป */
+.btn{ background:#409eff; color:#fff; font-weight:bold; padding:8px 12px; border:none; border-radius:6px; cursor:pointer; }
+.btn:hover{ background:#66b1ff; }
+button.danger{ background:#ff5c5c; } button.danger:hover{ background:#ff7b7b; }
+button.edit{ background:#67c23a; }  button.edit:hover{ background:#85d66b; }
+
+/* layout ย่อย */
+.row{ display:flex; gap:8px; align-items:center; }
+.span-2{ grid-column: span 2; }
+.placeholder{ visibility:hidden; height:0; margin:0; padding:0; border:0; }
+
+/* พรีวิวรูป */
+.thumb-wrap{ margin-top:8px; }
+.thumb{
+  width:96px; height:96px; object-fit:cover;
+  border:1px solid #ddd; border-radius:8px; background:#fafafa;
+}
+
+.table{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px; }
+.table th,.table td{ border:1px solid #ddd; padding:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.table th{ background:#f3f3f3; }
+.row{ display:flex; gap:8px; align-items:center; }
+.span-2{ grid-column:span 2; }
+.placeholder{ visibility:hidden; height:0; margin:0; padding:0; border:0; }
+.thumb-wrap{ margin-top:8px; }
+.thumb{ width:96px; height:96px; object-fit:cover; border:1px solid #ddd; border-radius:8px; background:#fafafa; }
+.btn{ background:#409eff; color:#fff; padding:8px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:700; }
+.btn:hover{ background:#66b1ff; }
+button.danger{ background:#ff5c5c; } button.danger:hover{ background:#ff7b7b; }
+button.edit{ background:#67c23a; }  button.edit:hover{ background:#85d66b; }

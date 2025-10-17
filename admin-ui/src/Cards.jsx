@@ -1,15 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createCard, deleteCard, listCards } from "./api";
 import "./theme.css";
-
-const API = import.meta.env.VITE_API_BASE?.replace(/\/+$/, "") || "";
 
 export default function Cards() {
   const [cards, setCards] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [form, setForm] = useState(defaultForm());
   const [msg, setMsg] = useState("");
-  const fileRef = useRef(null);
 
   function defaultForm() {
     return {
@@ -17,7 +14,6 @@ export default function Cards() {
       name: "",
       mana: 0,
       rarity: "Common",
-      spriteUrl: "",
       actionType: "โจมตี",
       actionValue: 0,
       targetSide: "self",
@@ -30,37 +26,12 @@ export default function Cards() {
     const data = await listCards();
     setCards(data.cards || []);
   }
+
   useEffect(() => { load(); }, []);
 
   function onChange(e) {
     const { name, value, type, checked } = e.target;
     setForm((s) => ({ ...s, [name]: type === "checkbox" ? checked : value }));
-  }
-
-  // ===== Upload image to backend =====
-  function onPickFile() { fileRef.current?.click(); }
-
-  async function onFileChange(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) return alert("ไฟล์ต้องเป็นรูปภาพ");
-
-    const fd = new FormData();
-    fd.append("file", file);
-    try {
-      const res = await fetch(`${API}/upload`, { method: "POST", body: fd });
-      const text = await res.text();
-      if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
-      const { url } = JSON.parse(text);
-      setForm((s) => ({ ...s, spriteUrl: url })); // เช่น /uploads/1711023_cat.png
-    } catch (err) {
-      alert("อัปโหลดไม่สำเร็จ: " + err.message);
-    }
-  }
-
-  function clearImage() {
-    setForm((s) => ({ ...s, spriteUrl: "" }));
-    if (fileRef.current) fileRef.current.value = "";
   }
 
   async function onAdd() {
@@ -71,7 +42,6 @@ export default function Cards() {
         name: form.name,
         mana: Number(form.mana),
         rarity: form.rarity,
-        spriteUrl: form.spriteUrl,          // URL จาก /upload หรือ URL ภายนอก
         action: {
           type: form.actionType,
           value: Number(form.actionValue),
@@ -104,7 +74,6 @@ export default function Cards() {
       name: c.name,
       mana: c.mana,
       rarity: c.rarity,
-      spriteUrl: c.spriteUrl || "",
       actionType: c.action?.type || "",
       actionValue: c.action?.value || 0,
       targetSide: c.action?.target?.side || "self",
@@ -121,7 +90,6 @@ export default function Cards() {
       name: form.name,
       mana: Number(form.mana),
       rarity: form.rarity,
-      spriteUrl: form.spriteUrl,
       action: {
         type: form.actionType,
         value: Number(form.actionValue),
@@ -166,34 +134,6 @@ export default function Cards() {
                 <option key={r}>{r}</option>
               ))}
             </select>
-          </label>
-
-          <label className="span-2">
-            Sprite URL
-            <div className="row">
-              <input
-                name="spriteUrl"
-                value={form.spriteUrl}
-                onChange={onChange}
-                placeholder="วางลิงก์รูป หรือกด Choose เพื่ออัปโหลด"
-              />
-              <button type="button" className="btn" onClick={onPickFile}>Choose</button>
-              {form.spriteUrl && (
-                <button type="button" className="btn danger" onClick={clearImage}>Clear</button>
-              )}
-            </div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              onChange={onFileChange}
-              style={{ display: "none" }}
-            />
-            {form.spriteUrl ? (
-              <div className="thumb-wrap">
-                <img className="thumb" src={form.spriteUrl} alt="preview" />
-              </div>
-            ) : null}
           </label>
         </div>
 
